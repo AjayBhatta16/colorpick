@@ -1,3 +1,5 @@
+# color pick version 1.0.3
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -38,6 +40,56 @@ def getHex(num):
     if s.default():
         hexString = hexString + str(num%16)
     return hexString
+
+def getHSL(r,g,b):
+    # sources:
+    # https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
+    # https://www.niwa.nu/2013/05/math-behind-colorspace-conversions-rgb-hsl/
+    r /= 255
+    g /= 255
+    b /= 255
+    maximum = max([r,g,b])
+    minimum = min([r,g,b])
+    chroma = maximum - minimum
+    if chroma == 0:
+        hue = 0
+    else:
+        s = Switch(maximum)
+        if s.case(r):
+            segment = (g - b) / chroma
+            shift = 0
+            if segment < 0:
+                shift = 6
+        if s.case(g):
+            segment = (b - r) / chroma
+            shift = 2
+        if s.case(b):
+            segment = (r - g) / chroma
+            shift = 4
+        hue = (segment + shift) * 60
+    luminace = (minimum + maximum) / 2
+    if maximum == minimum:
+        saturation = 0
+    else:
+        if luminace < 0.5:
+            saturation = chroma / (2 * luminace)
+        else:
+            saturation = chroma / (2 * (1 - luminace))
+        saturation *= 100
+    luminace *= 100
+    if hue % 1 == 0:
+        hue = int(hue)
+    else: 
+        hue = round(hue,2)
+    if saturation % 1 == 0:
+        saturation = int(saturation)
+    else:
+        saturation = round(saturation,3)
+    if luminace % 1 == 0:
+        luminace = int(luminace)
+    else:
+        luminace = round(luminace,3)
+    return "HSL("+str(hue)+","+str(saturation)+"%,"+str(luminace)+"%)"
 
 class ColorPick(QMainWindow):
     def __init__(self):
@@ -84,6 +136,9 @@ class ColorPick(QMainWindow):
         self.label2 = QLabel("#C8C8C8")
         self.label2.setAlignment(Qt.AlignCenter)
         self.label2.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.label3 = QLabel("HSL(0,0%,78.4%)")
+        self.label3.setAlignment(Qt.AlignCenter)
+        self.label3.setTextInteractionFlags(Qt.TextSelectableByMouse)
         layout.addWidget(rLabel,0,0)
         layout.addWidget(self.red,0,1)
         layout.addWidget(gLabel,1,0)
@@ -93,11 +148,12 @@ class ColorPick(QMainWindow):
         generalLayout.addLayout(layout)
         generalLayout.addWidget(self.label)
         generalLayout.addWidget(self.label2)
+        generalLayout.addWidget(self.label3)
         self._centralWidget.setLayout(generalLayout)
     def StyleUI(self):
         self.style.setColor(QPalette.Window,QColor(self.r,self.g,self.b))
         self.textBrightness = int(255-(self.r+self.g+self.b)/3)
-        self.style.setColor(QPalette.Text,QColor(self.textBrightness,self.textBrightness,self.textBrightness))
+        self.style.setColor(QPalette.WindowText,QColor(self.textBrightness,self.textBrightness,self.textBrightness))
         app.setPalette(self.style)
 
     @pyqtSlot()
@@ -105,16 +161,19 @@ class ColorPick(QMainWindow):
         self.r = self.red.value()
         self.label.setText("rgb("+str(self.r)+","+str(self.g)+","+str(self.b)+")")
         self.label2.setText("#"+getHex(self.r)+getHex(self.g)+getHex(self.b))
+        self.label3.setText(getHSL(self.r,self.g,self.b))
         self.StyleUI()
     def changeGreen(self):
         self.g = self.green.value()
         self.label.setText("rgb("+str(self.r)+","+str(self.g)+","+str(self.b)+")")
         self.label2.setText("#"+getHex(self.r)+getHex(self.g)+getHex(self.b))
+        self.label3.setText(getHSL(self.r,self.g,self.b))
         self.StyleUI()
     def changeBlue(self):
         self.b = self.blue.value()
         self.label.setText("rgb("+str(self.r)+","+str(self.g)+","+str(self.b)+")")
         self.label2.setText("#"+getHex(self.r)+getHex(self.g)+getHex(self.b))
+        self.label3.setText(getHSL(self.r,self.g,self.b))
         self.StyleUI()
 
 
@@ -122,3 +181,14 @@ app = QApplication([])
 view = ColorPick()
 view.show()
 app.exec_()
+
+"""
+Changelog:
+1.0.1 - added hexadecimal conversion feature
+      - hex conversion algorithm added math and pyswitch dependencies
+      - made rgb and hex text selectable by mouse
+1.0.2 - added labels for color sliders
+      - put labels and color sliders in grid sub-layout
+1.0.3 - added HSL conversion feature
+      - fixed text staying black on dark colors
+"""
