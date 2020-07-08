@@ -1,10 +1,11 @@
-# color pick version 1.0.3
+# color pick version 1.1.0
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from pyswitch import Switch
 import math
+import random as rd 
 
 def getHex(num):
     # assumes an integer between 0 and 255
@@ -106,6 +107,7 @@ class ColorPick(QMainWindow):
     def InitUI(self):
         generalLayout = QVBoxLayout()
         layout = QGridLayout()
+        layout2 = QGridLayout()
         rLabel = QLabel("Red:")
         rLabel.setAlignment(Qt.AlignLeft)
         rLabel.setFixedSize(40,20)
@@ -139,16 +141,21 @@ class ColorPick(QMainWindow):
         self.label3 = QLabel("HSL(0,0%,78.4%)")
         self.label3.setAlignment(Qt.AlignCenter)
         self.label3.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.randomButton = QPushButton("Random")
+        self.randomButton.setFixedWidth(100)
+        self.randomButton.clicked.connect(self.randomColor)
         layout.addWidget(rLabel,0,0)
         layout.addWidget(self.red,0,1)
         layout.addWidget(gLabel,1,0)
         layout.addWidget(self.green,1,1)
         layout.addWidget(bLabel,2,0)
         layout.addWidget(self.blue,2,1)
+        layout2.addWidget(self.randomButton,0,0)
         generalLayout.addLayout(layout)
         generalLayout.addWidget(self.label)
         generalLayout.addWidget(self.label2)
         generalLayout.addWidget(self.label3)
+        generalLayout.addLayout(layout2)
         self._centralWidget.setLayout(generalLayout)
     def StyleUI(self):
         self.style.setColor(QPalette.Window,QColor(self.r,self.g,self.b))
@@ -175,7 +182,17 @@ class ColorPick(QMainWindow):
         self.label2.setText("#"+getHex(self.r)+getHex(self.g)+getHex(self.b))
         self.label3.setText(getHSL(self.r,self.g,self.b))
         self.StyleUI()
-
+    def randomColor(self):
+        self.r = rd.randint(0,255)
+        self.g = rd.randint(0,255)
+        self.b = rd.randint(0,255)
+        self.red.setValue(self.r)
+        self.green.setValue(self.g)
+        self.blue.setValue(self.b)
+        self.label.setText("rgb("+str(self.r)+","+str(self.g)+","+str(self.b)+")")
+        self.label2.setText("#"+getHex(self.r)+getHex(self.g)+getHex(self.b))
+        self.label3.setText(getHSL(self.r,self.g,self.b))        
+        self.StyleUI()
 
 app = QApplication([])
 view = ColorPick()
@@ -184,11 +201,17 @@ app.exec_()
 
 """
 Changelog:
+
 1.0.1 - added hexadecimal conversion feature
-      - hex conversion algorithm added math and pyswitch dependencies
+      - hex conversion algorithm created math and pyswitch dependencies
       - made rgb and hex text selectable by mouse
+
 1.0.2 - added labels for color sliders
       - put labels and color sliders in grid sub-layout
+
 1.0.3 - added HSL conversion feature
       - fixed text staying black on dark colors
+
+1.1.0 - added button for random color
+      - created dependency on random library
 """
