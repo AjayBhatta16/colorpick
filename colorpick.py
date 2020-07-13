@@ -1,4 +1,4 @@
-# color pick version 1.2.1
+# color pick version 1.2.2
 
 # Qt5 imports
 from PyQt5.QtCore import Qt, pyqtSlot
@@ -239,6 +239,7 @@ class ColorPick(QMainWindow):
         # adjust text color accordingly
         self.textBrightness = int(255-(self.r+self.g+self.b)/3)
         self.style.setColor(QPalette.WindowText,QColor(self.textBrightness,self.textBrightness,self.textBrightness))
+        self.style.setColor(QPalette.ButtonText,QColor(self.textBrightness,self.textBrightness,self.textBrightness))
 
         # update palette
         app.setPalette(self.style)
@@ -331,6 +332,11 @@ class ColorPick(QMainWindow):
         # update stylesheet
         self.StyleUI()
 
+        # update sliders
+        self.red.setValue(self.r)
+        self.green.setValue(self.g)
+        self.blue.setValue(self.b)
+
         # update labels
         self.label.setText(data["rgb"])
         self.label2.setText(data["hex"])
@@ -366,4 +372,7 @@ Changelog:
 1.2.1 - added option to open saved colors
       - replaced * imports with specific class imports
       - added keyboard shortcuts for save and open
+
+1.2.2 - fixed sliders not updating on file open
+      - fixed toolbar text color not changing
 """
